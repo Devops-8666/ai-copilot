@@ -123,6 +123,9 @@ def run_action():
 @app.route("/health", methods=["GET"])
 def health():
     return {"status": "ok"}, 200
+@app.route("/", methods=["GET"])
+def index():
+    return "<h1>AI Copilot is running!</h1><p>Use /anomalies or /scan-and-notify endpoints.</p>", 200
 
 
 if __name__ == "__main__":
