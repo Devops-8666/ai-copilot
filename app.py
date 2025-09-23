@@ -120,6 +120,11 @@ def run_action():
     # PoC: echo back the action. DO NOT run shell commands in production automatically.
     return jsonify({"status":"ok","executed":action})
 
+@app.route("/health", methods=["GET"])
+def health():
+    return {"status": "ok"}, 200
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
 
