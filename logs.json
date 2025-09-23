@@ -1,0 +1,6 @@
+[
+  {"timestamp":"2025-09-14T10:01:00Z","pod":"payment-api-abc","namespace":"payments","cpu":5,"memory":100,"latency_ms":50,"error_count":0},
+  {"timestamp":"2025-09-14T10:02:00Z","pod":"payment-api-abc","namespace":"payments","cpu":95,"memory":1500,"latency_ms":2000,"error_count":20},
+  {"timestamp":"2025-09-14T10:03:00Z","pod":"frontend-1","namespace":"web","cpu":10,"memory":200,"latency_ms":60,"error_count":0}
+]
+
