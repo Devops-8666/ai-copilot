@@ -10,6 +10,18 @@ except:
     openai = None
 
 app = Flask(__name__)
+from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST
+
+# Example metrics
+ANOMALY_COUNTER = Counter("anomalies_detected_total", "Total anomalies detected")
+CPU_GAUGE = Gauge("pod_cpu_usage_percent", "CPU usage per pod", ["pod", "namespace"])
+MEMORY_GAUGE = Gauge("pod_memory_usage_mb", "Memory usage per pod", ["pod", "namespace"])
+ERROR_GAUGE = Gauge("pod_error_count", "Error count per pod", ["pod", "namespace"])
+
+# Prometheus metrics endpoint
+@app.route("/metrics")
+def metrics():
+    return generate_latest(), 200, {"Content-Type": CONTENT_TYPE_LATEST}
 
 # CONFIG (edit if needed)
 PROM_URL = os.getenv("PROM_URL", "")         # set if you have Prometheus
@@ -85,16 +97,26 @@ def make_debug_commands(row):
 @app.route("/anomalies", methods=["GET"])
 def anomalies():
     logs = load_local_logs()
-    df_num = pd.DataFrame()
     df, numcols = assemble_dataframe(None, logs)
     anomalies_df = detect_anomalies(df, numcols) if not df.empty else pd.DataFrame()
     results = []
+
     for _, r in anomalies_df.iterrows():
         context = json.dumps(r.to_dict(), default=str)
         rca = generate_rca_text(context)
         cmds = make_debug_commands(r)
         results.append({"row": r.to_dict(), "rca": rca, "commands": cmds})
+
+        # --- Update Prometheus metrics per anomaly ---
+        pod = r.get("pod", "<pod>")
+        ns = r.get("namespace", "default")
+        ANOMALY_COUNTER.inc()  # increment total anomalies
+        CPU_GAUGE.labels(pod=pod, namespace=ns).set(r.get("cpu", 0))
+        MEMORY_GAUGE.labels(pod=pod, namespace=ns).set(r.get("memory", 0))
+        ERROR_GAUGE.labels(pod=pod, namespace=ns).set(r.get("error_count", 0))
+
     return jsonify({"count": len(results), "items": results})
+
 
 @app.route("/scan-and-notify", methods=["POST"])
 def scan_and_notify():

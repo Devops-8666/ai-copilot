@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: anomaly-detector-monitor
+  namespace: vinay-cool1512-dev
+spec:
+  selector:
+    matchLabels:
+      app: anomaly-detector
+  endpoints:
+  - port: 8080-tcp      # <-- this must match the port name in your Service
+    path: /metrics
+    interval: 30s
+

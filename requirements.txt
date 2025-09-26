@@ -3,4 +3,6 @@ pandas
 scikit-learn
 requests
 openai
+prometheus-client==0.18.0
+
 
